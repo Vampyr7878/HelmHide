@@ -1,0 +1,7 @@
+## Interface: 70100
+## Title: Helm Hide
+## Notes: Automaticly hides helmet when player enters resting zone.
+## Author: Vampyr78
+## Version: 2.1.1
+## SavedVariablesPerCharacter: helmHideHelm
+HelmHide.lua
