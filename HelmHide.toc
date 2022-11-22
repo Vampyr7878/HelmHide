@@ -1,0 +1,7 @@
+## Interface: 30400
+## Title: Helm Hide
+## Notes: Automaticly hides helmet and cloak when player enters resting zone.
+## Author: Vampyr78
+## Version: 2.6-wotlk
+## SavedVariablesPerCharacter: helmHideHelmEnabled, helmHideCloakEnabled, helmHideCombat
+HelmHide.lua
