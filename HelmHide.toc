@@ -1,7 +1,7 @@
-## Interface: 100002
+## Interface: 20502
 ## Title: Helm Hide
 ## Notes: Automaticly hides helmet and cloak when player enters resting zone.
 ## Author: Vampyr78
-## Version: 2.7
-## SavedVariablesPerCharacter: helmHideHelm, helmHideCloak, helmHideHelmEnabled, helmHideCloakEnabled
+## Version: 2.4.3-tbc
+## SavedVariablesPerCharacter: helmHideHelmEnabled, helmHideCloakEnabled, helmHideCombat
 HelmHide.lua

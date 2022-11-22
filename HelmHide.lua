@@ -19,97 +19,54 @@ function SlashCmdList.HELMHIDE(msg, editbox)
 		helmHideCloakEnabled = true
 		print("Helm Hidee Claok Only Enabled")
 	elseif msg == "off" then
-		helmHideHelmEnabled = false
-		helmHideCloakEnabled = false
+		helmHideEnabled = false
 		print("Helm Hide Disabled")
+	elseif msg == "combat" then
+		helmHideCombat = true
+		print("Show helmet only in combat")
+	elseif msg == "rest" then
+		helmHideCombat = false;
+		print("Hide helmet in resting areas only")
 	end
 end
 
 function helmHideFrameOnEvent(self, event, message)
-	if helmHideHelmEnabled then
-		if IsResting() then
-			HelmHideHelmHide()
-		else
-			HelmHideHelmShow()
+	if helmHideCombat then
+		if helmHideHelmEnabled then
+			if event == "PLAYER_REGEN_DISABLED" then
+				ShowHelm(true)
+			elseif event == "PLAYER_REGEN_ENABLED" then
+				ShowHelm(false)
+			end
+		end
+	else
+		if helmHideHelmEnabled then
+			if IsResting() then
+				ShowHelm(false)
+			else
+				ShowHelm(true)
+			end
 		end
 	end
 	if helmHideCloakEnabled then
 		if IsResting() then
-			HelmHideCloakHide()
+			ShowCloak(false)
 		else
-			HelmHideCloakShow()
-		end
-	end
-end
-
-function HelmHideHelmHide()
-	PickupInventoryItem(GetInventorySlotInfo("HeadSlot"))
-	local helmHideType, helmHideId = GetCursorInfo()
-	if helmHideId ~= nil then
-		helmHideHelm = GetItemInfo(helmHideId)
-		PutItemInBag(ContainerIDToInventoryID(4))
-	end
-end
-
-function HelmHideHelmShow()
-	for i = 1, GetContainerNumSlots(4) do
-		local helmHideId = GetContainerItemID(4, i)
-		if helmHideId ~= nil then
-			local helmHideName = GetItemInfo(helmHideId)
-			if helmHideName == helmHideHelm then
-				PickupContainerItem(4, i)
-				PickupInventoryItem(GetInventorySlotInfo("HeadSlot"))
-			end
+			ShowCloak(true)
 		end
 	end
 end
 
 function HelmHideHelmToggle()
-	PickupInventoryItem(GetInventorySlotInfo("HeadSlot"))
-	local helmHideType, helmHideId = GetCursorInfo()
-	if helmHideId ~= nil then
-		HelmHideHelmHide()
-		HelmHideHelmHide()
-	else
-		HelmHideHelmShow()
-	end
-end
-
-function HelmHideCloakHide()
-	PickupInventoryItem(GetInventorySlotInfo("BackSlot"))
-	local helmHideType, helmHideId = GetCursorInfo()
-	if helmHideId ~= nil then
-		helmHideCloak = GetItemInfo(helmHideId)
-		PutItemInBag(ContainerIDToInventoryID(4))
-	end
-end
-
-function HelmHideCloakShow()
-	for i = 1, GetContainerNumSlots(4) do
-		local helmHideId = GetContainerItemID(4, i)
-		if helmHideId ~= nil then
-			local helmHideName = GetItemInfo(helmHideId)
-			if helmHideName == helmHideCloak then
-				PickupContainerItem(4, i)
-				PickupInventoryItem(GetInventorySlotInfo("BackSlot"))
-			end
-		end
-	end
+	ShowHelm(not ShowingHelm())
 end
 
 function HelmHideCloakToggle()
-	PickupInventoryItem(GetInventorySlotInfo("BackSlot"))
-	local helmHideType, helmHideId = GetCursorInfo()
-	if helmHideId ~= nil then
-		HelmHideCloakHide()
-		HelmHideCloakHide()
-	else
-		HelmHideCloakShow()
-	end
+	ShowCloak(not ShowingCloak())
 end
 
 function HelmHideCreateButton(icon_on, help, toggle, ...)
-	local button = CreateFrame("BUTTON", nil, CharacterModelScene)
+	local button = CreateFrame("BUTTON", nil, CharacterModelFrame)
 	local hilite = button:CreateTexture(nil, "HIGHLIGHT")
 	hilite:SetAllPoints()
 	hilite:SetTexture("Interface\\Common\\UI-ModelControlPanel")
@@ -137,10 +94,10 @@ function HelmHideCreateButton(icon_on, help, toggle, ...)
 		helmHideCloakButton:Hide()
 	end)
 	button:SetAlpha(0.5)
-	CharacterModelScene:HookScript("OnEnter", function()
+	CharacterModelFrame:HookScript("OnEnter", function()
 		button:Show()
 	end)
-	CharacterModelScene:HookScript("OnLeave", function(self)
+	CharacterModelFrame:HookScript("OnLeave", function(self)
 		if not self:IsMouseOver() then
 			button:Hide()
 		end
@@ -162,11 +119,13 @@ end
 function helmHideOptionsRefresh()
 	helmHideButtons[1]:SetChecked(helmHideHelmEnabled)
 	helmHideButtons[2]:SetChecked(helmHideCloakEnabled)
+	helmHideButtons[3]:SetChecked(helmHideCombat)
 end
 
 function helmHideOptionsOkay()
 	helmHideHelmEnabled = helmHideButtons[1]:GetChecked()
 	helmHideCloakEnabled = helmHideButtons[2]:GetChecked()
+	helmHideCombat = helmHideButtons[3]:GetChecked()
 end
 
 local helmHideFrame = CreateFrame("FRAME", nil, UIParent)
@@ -176,16 +135,19 @@ helmHideFrame:RegisterEvent("ZONE_CHANGED");
 helmHideFrame:RegisterEvent("ZONE_CHANGED_INDOORS");
 helmHideFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA");
 helmHideFrame:RegisterEvent("PLAYER_LOGIN");
+helmHideFrame:RegisterEvent("PLAYER_REGEN_DISABLED");
+helmHideFrame:RegisterEvent("PLAYER_REGEN_ENABLED");
 helmHideFrame:SetScript("OnEvent", helmHideFrameOnEvent)
 
-helmHideHelmButton = HelmHideCreateButton("Interface\\AddOns\\HelmHide\\HelmShow", SHOW_HELM, HelmHideHelmToggle, "BOTTOMLEFT", 5, 5)
+helmHideHelmButton = HelmHideCreateButton("Interface\\AddOns\\HelmHide\\HelmShow", SHOW_HELM, HelmHideHelmToggle, "BOTTOMLEFT", 5, 35)
 
-helmHideCloakButton = HelmHideCreateButton("Interface\\AddOns\\HelmHide\\CloakShow", SHOW_CLOAK, HelmHideCloakToggle, "BOTTOMRIGHT", -5, 5)
+helmHideCloakButton = HelmHideCreateButton("Interface\\AddOns\\HelmHide\\CloakShow", SHOW_CLOAK, HelmHideCloakToggle, "BOTTOMRIGHT", -5, 35)
 
 local helmHideOptions = CreateFrame("FRAME")
 helmHideOptions.name = "Helm Hide"
 helmHideCheckButton("Enable autohiding helmet", helmHideOptions, 20, -20)
 helmHideCheckButton("Enable autohiding cloak", helmHideOptions, 20, -50)
+helmHideCheckButton("Show helmet only in combat", helmHideOptions, 20, -80)
 helmHideOptions.refresh = helmHideOptionsRefresh
 helmHideOptions.okay = helmHideOptionsOkay
 helmHideOptions.cancel = helmHideOptionsRefresh
