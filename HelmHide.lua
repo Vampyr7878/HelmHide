@@ -47,17 +47,17 @@ function HelmHideHelmHide()
 	local helmHideType, helmHideId = GetCursorInfo()
 	if helmHideId ~= nil then
 		helmHideHelm = GetItemInfo(helmHideId)
-		PutItemInBag(ContainerIDToInventoryID(4))
+		PutItemInBag(C_Container.ContainerIDToInventoryID(4))
 	end
 end
 
 function HelmHideHelmShow()
-	for i = 1, GetContainerNumSlots(4) do
-		local helmHideId = GetContainerItemID(4, i)
+	for i = 1, C_Container.GetContainerNumSlots(4) do
+		local helmHideId = C_Container.GetContainerItemID(4, i)
 		if helmHideId ~= nil then
 			local helmHideName = GetItemInfo(helmHideId)
 			if helmHideName == helmHideHelm then
-				PickupContainerItem(4, i)
+				C_Container.PickupContainerItem(4, i)
 				PickupInventoryItem(GetInventorySlotInfo("HeadSlot"))
 			end
 		end
@@ -80,17 +80,17 @@ function HelmHideCloakHide()
 	local helmHideType, helmHideId = GetCursorInfo()
 	if helmHideId ~= nil then
 		helmHideCloak = GetItemInfo(helmHideId)
-		PutItemInBag(ContainerIDToInventoryID(4))
+		PutItemInBag(C_Container.ContainerIDToInventoryID(4))
 	end
 end
 
 function HelmHideCloakShow()
-	for i = 1, GetContainerNumSlots(4) do
-		local helmHideId = GetContainerItemID(4, i)
+	for i = 1, C_Container.GetContainerNumSlots(4) do
+		local helmHideId = C_Container.GetContainerItemID(4, i)
 		if helmHideId ~= nil then
 			local helmHideName = GetItemInfo(helmHideId)
 			if helmHideName == helmHideCloak then
-				PickupContainerItem(4, i)
+				C_Container.PickupContainerItem(4, i)
 				PickupInventoryItem(GetInventorySlotInfo("BackSlot"))
 			end
 		end
