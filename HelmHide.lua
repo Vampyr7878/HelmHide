@@ -66,7 +66,7 @@ function HelmHideCloakToggle()
 end
 
 function HelmHideCreateButton(icon_on, help, toggle, ...)
-	local button = CreateFrame("BUTTON", nil, CharacterModelFrame)
+	local button = CreateFrame("BUTTON", nil, CharacterModelScene)
 	local hilite = button:CreateTexture(nil, "HIGHLIGHT")
 	hilite:SetAllPoints()
 	hilite:SetTexture("Interface\\Common\\UI-ModelControlPanel")
@@ -94,10 +94,10 @@ function HelmHideCreateButton(icon_on, help, toggle, ...)
 		helmHideCloakButton:Hide()
 	end)
 	button:SetAlpha(0.5)
-	CharacterModelFrame:HookScript("OnEnter", function()
+	CharacterModelScene:HookScript("OnEnter", function()
 		button:Show()
 	end)
-	CharacterModelFrame:HookScript("OnLeave", function(self)
+	CharacterModelScene:HookScript("OnLeave", function(self)
 		if not self:IsMouseOver() then
 			button:Hide()
 		end
