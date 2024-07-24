@@ -1,9 +1,9 @@
+local HelmHide = LibStub("AceAddon-3.0"):NewAddon("HelmHide")
+
 SLASH_HELMHIDE1 = "/helmhide"
 SLASH_HELMHIDE2 = "/hh"
 
-local helmHideHelmButton
-local helmHideCloakButton
-helmHideButtons = {}
+HelmHide.Buttons = {}
 
 function SlashCmdList.HELMHIDE(msg, editbox)
 	if msg == "on" then
@@ -25,38 +25,38 @@ function SlashCmdList.HELMHIDE(msg, editbox)
 	end
 end
 
-function helmHideFrameOnEvent(self, event, message)
+function HelmHide:FrameOnEvent()
 	if helmHideHelmEnabled then
 		if IsResting() then
-			HelmHideHelmHide()
+			HelmHide:HelmHide()
 		else
-			HelmHideHelmShow()
+			HelmHide:HelmShow()
 		end
 	end
 	if helmHideCloakEnabled then
 		if IsResting() then
-			HelmHideCloakHide()
+			HelmHide:CloakHide()
 		else
-			HelmHideCloakShow()
+			HelmHide:CloakShow()
 		end
 	end
 end
 
-function HelmHideHelmHide()
+function HelmHide:HelmHide()
 	PickupInventoryItem(GetInventorySlotInfo("HeadSlot"))
-	local helmHideType, helmHideId = GetCursorInfo()
-	if helmHideId ~= nil then
-		helmHideHelm = GetItemInfo(helmHideId)
+	local type, id = GetCursorInfo()
+	if id ~= nil then
+		self.Helm = C_Item.GetItemInfo(id)
 		PutItemInBag(C_Container.ContainerIDToInventoryID(4))
 	end
 end
 
-function HelmHideHelmShow()
+function HelmHide:HelmShow()
 	for i = 1, C_Container.GetContainerNumSlots(4) do
-		local helmHideId = C_Container.GetContainerItemID(4, i)
-		if helmHideId ~= nil then
-			local helmHideName = GetItemInfo(helmHideId)
-			if helmHideName == helmHideHelm then
+		local id = C_Container.GetContainerItemID(4, i)
+		if id ~= nil then
+			name = C_Item.GetItemInfo(id)
+			if name == self.Helm then
 				C_Container.PickupContainerItem(4, i)
 				PickupInventoryItem(GetInventorySlotInfo("HeadSlot"))
 			end
@@ -64,32 +64,32 @@ function HelmHideHelmShow()
 	end
 end
 
-function HelmHideHelmToggle()
+function HelmHide:HelmToggle()
 	PickupInventoryItem(GetInventorySlotInfo("HeadSlot"))
-	local helmHideType, helmHideId = GetCursorInfo()
-	if helmHideId ~= nil then
-		HelmHideHelmHide()
-		HelmHideHelmHide()
+	local type, id = GetCursorInfo()
+	if id ~= nil then
+		HelmHide:HelmHide()
+		HelmHide:HelmHide()
 	else
-		HelmHideHelmShow()
+		HelmHide:HelmShow()
 	end
 end
 
-function HelmHideCloakHide()
+function HelmHide:CloakHide()
 	PickupInventoryItem(GetInventorySlotInfo("BackSlot"))
-	local helmHideType, helmHideId = GetCursorInfo()
-	if helmHideId ~= nil then
-		helmHideCloak = GetItemInfo(helmHideId)
+	local type, id = GetCursorInfo()
+	if id ~= nil then
+		self.Cloak = C_Item.GetItemInfo(id)
 		PutItemInBag(C_Container.ContainerIDToInventoryID(4))
 	end
 end
 
-function HelmHideCloakShow()
+function HelmHide:CloakShow()
 	for i = 1, C_Container.GetContainerNumSlots(4) do
-		local helmHideId = C_Container.GetContainerItemID(4, i)
-		if helmHideId ~= nil then
-			local helmHideName = GetItemInfo(helmHideId)
-			if helmHideName == helmHideCloak then
+		local id = C_Container.GetContainerItemID(4, i)
+		if id ~= nil then
+			local name = C_Item.GetItemInfo(id)
+			if name == self.Cloak then
 				C_Container.PickupContainerItem(4, i)
 				PickupInventoryItem(GetInventorySlotInfo("BackSlot"))
 			end
@@ -97,18 +97,18 @@ function HelmHideCloakShow()
 	end
 end
 
-function HelmHideCloakToggle()
+function HelmHide:CloakToggle()
 	PickupInventoryItem(GetInventorySlotInfo("BackSlot"))
-	local helmHideType, helmHideId = GetCursorInfo()
-	if helmHideId ~= nil then
-		HelmHideCloakHide()
-		HelmHideCloakHide()
+	local type, id = GetCursorInfo()
+	if id ~= nil then
+		HelmHide:CloakHide()
+		HelmHide:CloakHide()
 	else
-		HelmHideCloakShow()
+		HelmHide:CloakShow()
 	end
 end
 
-function HelmHideCreateButton(icon_on, help, toggle, ...)
+function HelmHide:CreateButton(icon_on, help, toggle, ...)
 	local button = CreateFrame("BUTTON", nil, CharacterModelScene)
 	local hilite = button:CreateTexture(nil, "HIGHLIGHT")
 	hilite:SetAllPoints()
@@ -133,8 +133,8 @@ function HelmHideCreateButton(icon_on, help, toggle, ...)
 	button:SetScript("OnLeave", function()
 		button:SetAlpha(0.5)
 		GameTooltip_Hide()
-		helmHideHelmButton:Hide()
-		helmHideCloakButton:Hide()
+		self.HelmButton:Hide()
+		self.CloakButton:Hide()
 	end)
 	button:SetAlpha(0.5)
 	CharacterModelScene:HookScript("OnEnter", function()
@@ -148,45 +148,56 @@ function HelmHideCreateButton(icon_on, help, toggle, ...)
 	return button
 end
 
-function helmHideCheckButton(text, parent, x, y)
-	local button = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")
-	local font = button:CreateFontString(nil, nil, "GameFontNormal")
-	font:SetText(text)
-	font:SetPoint("LEFT", x + 10, 0)
-	button:SetFontString(font)
-	button:SetPoint("TOPLEFT", x, y)
-	button:Show()
-	table.insert(helmHideButtons, button)
+function HelmHide:OnInitialize()
+	self.Frame = CreateFrame("FRAME", nil, UIParent)
+	self.Frame:RegisterEvent("PLAYER_ENTERING_WORLD");
+	self.Frame:RegisterEvent("PLAYER_UPDATE_RESTING");
+	self.Frame:RegisterEvent("ZONE_CHANGED");
+	self.Frame:RegisterEvent("ZONE_CHANGED_INDOORS");
+	self.Frame:RegisterEvent("ZONE_CHANGED_NEW_AREA");
+	self.Frame:RegisterEvent("PLAYER_LOGIN");
+	self.Frame:SetScript("OnEvent", self.FrameOnEvent)
+	self.HelmButton = HelmHide:CreateButton("Interface\\AddOns\\HelmHide\\HelmShow", SHOW_HELM, self.HelmToggle, "BOTTOMLEFT", 5, 5)
+	self.CloakButton = HelmHide:CreateButton("Interface\\AddOns\\HelmHide\\CloakShow", SHOW_CLOAK, self.CloakToggle, "BOTTOMRIGHT", -5, 5)
+	local options = {
+		name = "Helm Hide",
+		handler = HelmHide,
+		type = "group",
+		args = {
+			helm = {
+				name = "Enable autohiding helmet",
+				type = "toggle",
+				desc = "Enable autohiding helmet when enter resting area",
+				width = "full",
+				set = "SetHelm",
+				get = "GetHelm",
+			},
+			cloak = {
+				name = "Enable autohiding cloak",
+				type = "toggle",
+				desc = "Enable autohiding cloak when enter resting area",
+				width = "full",
+				set = "SetClolak",
+				get = "GetClolak",
+			}
+		}
+	}
+	LibStub("AceConfig-3.0"):RegisterOptionsTable("HelmHide", options, nil)
+	LibStub("AceConfigDialog-3.0"):AddToBlizOptions("HelmHide", "Helm Hide")
 end
 
-function helmHideOptionsRefresh()
-	helmHideButtons[1]:SetChecked(helmHideHelmEnabled)
-	helmHideButtons[2]:SetChecked(helmHideCloakEnabled)
+function HelmHide:SetHelm(info, val)
+	helmHideHelmEnabled = val
 end
 
-function helmHideOptionsOkay()
-	helmHideHelmEnabled = helmHideButtons[1]:GetChecked()
-	helmHideCloakEnabled = helmHideButtons[2]:GetChecked()
+function HelmHide:GetHelm(info)
+	return helmHideHelmEnabled
 end
 
-local helmHideFrame = CreateFrame("FRAME", nil, UIParent)
-helmHideFrame:RegisterEvent("PLAYER_ENTERING_WORLD");
-helmHideFrame:RegisterEvent("PLAYER_UPDATE_RESTING");
-helmHideFrame:RegisterEvent("ZONE_CHANGED");
-helmHideFrame:RegisterEvent("ZONE_CHANGED_INDOORS");
-helmHideFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA");
-helmHideFrame:RegisterEvent("PLAYER_LOGIN");
-helmHideFrame:SetScript("OnEvent", helmHideFrameOnEvent)
+function HelmHide:SetClolak(info, val)
+	helmHideCloakEnabled = val
+end
 
-helmHideHelmButton = HelmHideCreateButton("Interface\\AddOns\\HelmHide\\HelmShow", SHOW_HELM, HelmHideHelmToggle, "BOTTOMLEFT", 5, 5)
-
-helmHideCloakButton = HelmHideCreateButton("Interface\\AddOns\\HelmHide\\CloakShow", SHOW_CLOAK, HelmHideCloakToggle, "BOTTOMRIGHT", -5, 5)
-
-local helmHideOptions = CreateFrame("FRAME")
-helmHideOptions.name = "Helm Hide"
-helmHideCheckButton("Enable autohiding helmet", helmHideOptions, 20, -20)
-helmHideCheckButton("Enable autohiding cloak", helmHideOptions, 20, -50)
-helmHideOptions.refresh = helmHideOptionsRefresh
-helmHideOptions.okay = helmHideOptionsOkay
-helmHideOptions.cancel = helmHideOptionsRefresh
-InterfaceOptions_AddCategory(helmHideOptions)
+function HelmHide:GetClolak(info)
+	return helmHideCloakEnabled
+end
