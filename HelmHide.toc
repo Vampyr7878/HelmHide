@@ -1,8 +1,8 @@
-## Interface: 110002
+## Interface: 110005
 ## Title: Helm Hide
 ## Notes: Automaticly hides helmet and cloak when player enters resting zone.
 ## Author: Vampyr78
-## Version: 3.5.1
+## Version: 3.6
 ## SavedVariablesPerCharacter: helmHideHelm, helmHideCloak, helmHideHelmEnabled, helmHideCloakEnabled
 ## IconTexture: Interface\Icons\inv_helmet_50.blp
 embeds.xml
