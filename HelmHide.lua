@@ -1,9 +1,11 @@
+local HelmHide = LibStub("AceAddon-3.0"):NewAddon("HelmHide")
+
 SLASH_HELMHIDE1 = "/helmhide"
 SLASH_HELMHIDE2 = "/hh"
 
 local helmHideHelmButton
 local helmHideCloakButton
-helmHideButtons = {}
+HelmHide.Buttons = {}
 
 function SlashCmdList.HELMHIDE(msg, editbox)
 	if msg == "on" then
@@ -30,7 +32,7 @@ function SlashCmdList.HELMHIDE(msg, editbox)
 	end
 end
 
-function helmHideFrameOnEvent(self, event, message)
+function HelmHide:FrameOnEvent(self, event, message)
 	if helmHideCombat then
 		if helmHideHelmEnabled then
 			if event == "PLAYER_REGEN_DISABLED" then
@@ -57,15 +59,15 @@ function helmHideFrameOnEvent(self, event, message)
 	end
 end
 
-function HelmHideHelmToggle()
+function HelmHide:HelmToggle()
 	ShowHelm(not ShowingHelm())
 end
 
-function HelmHideCloakToggle()
+function HelmHide:CloakToggle()
 	ShowCloak(not ShowingCloak())
 end
 
-function HelmHideCreateButton(icon_on, help, toggle, ...)
+function HelmHide:CreateButton(icon_on, help, toggle, ...)
 	local button = CreateFrame("BUTTON", nil, CharacterModelScene)
 	local hilite = button:CreateTexture(nil, "HIGHLIGHT")
 	hilite:SetAllPoints()
@@ -90,8 +92,8 @@ function HelmHideCreateButton(icon_on, help, toggle, ...)
 	button:SetScript("OnLeave", function()
 		button:SetAlpha(0.5)
 		GameTooltip_Hide()
-		helmHideHelmButton:Hide()
-		helmHideCloakButton:Hide()
+		self.HelmButton:Hide()
+		self.CloakButton:Hide()
 	end)
 	button:SetAlpha(0.5)
 	CharacterModelScene:HookScript("OnEnter", function()
@@ -105,50 +107,56 @@ function HelmHideCreateButton(icon_on, help, toggle, ...)
 	return button
 end
 
-function helmHideCheckButton(text, parent, x, y)
-	local button = CreateFrame("CheckButton", nil, parent, "UICheckButtonTemplate")
-	local font = button:CreateFontString(nil, nil, "GameFontNormal")
-	font:SetText(text)
-	font:SetPoint("LEFT", x + 10, 0)
-	button:SetFontString(font)
-	button:SetPoint("TOPLEFT", x, y)
-	button:Show()
-	table.insert(helmHideButtons, button)
+function HelmHide:OnInitialize()
+	self.Frame = CreateFrame("FRAME", nil, UIParent)
+	self.Frame:RegisterEvent("PLAYER_ENTERING_WORLD");
+	self.Frame:RegisterEvent("PLAYER_UPDATE_RESTING");
+	self.Frame:RegisterEvent("ZONE_CHANGED");
+	self.Frame:RegisterEvent("ZONE_CHANGED_INDOORS");
+	self.Frame:RegisterEvent("ZONE_CHANGED_NEW_AREA");
+	self.Frame:RegisterEvent("PLAYER_LOGIN");
+	self.Frame:SetScript("OnEvent", self.FrameOnEvent)
+	self.HelmButton = HelmHide:CreateButton("Interface\\AddOns\\HelmHide\\HelmShow", SHOW_HELM, self.HelmToggle, "BOTTOMLEFT", 5, 5)
+	self.CloakButton = HelmHide:CreateButton("Interface\\AddOns\\HelmHide\\CloakShow", SHOW_CLOAK, self.CloakToggle, "BOTTOMRIGHT", -5, 5)
+	local options = {
+		name = "Helm Hide",
+		handler = HelmHide,
+		type = "group",
+		args = {
+			helm = {
+				name = "Enable autohiding helmet",
+				type = "toggle",
+				desc = "Enable autohiding helmet when enter resting area",
+				width = "full",
+				set = "SetHelm",
+				get = "GetHelm",
+			},
+			cloak = {
+				name = "Enable autohiding cloak",
+				type = "toggle",
+				desc = "Enable autohiding cloak when enter resting area",
+				width = "full",
+				set = "SetClolak",
+				get = "GetClolak",
+			}
+		}
+	}
+	LibStub("AceConfig-3.0"):RegisterOptionsTable("HelmHide", options, nil)
+	LibStub("AceConfigDialog-3.0"):AddToBlizOptions("HelmHide", "Helm Hide")
 end
 
-function helmHideOptionsRefresh()
-	helmHideButtons[1]:SetChecked(helmHideHelmEnabled)
-	helmHideButtons[2]:SetChecked(helmHideCloakEnabled)
-	helmHideButtons[3]:SetChecked(helmHideCombat)
+function HelmHide:SetHelm(info, val)
+	helmHideHelmEnabled = val
 end
 
-function helmHideOptionsOkay()
-	helmHideHelmEnabled = helmHideButtons[1]:GetChecked()
-	helmHideCloakEnabled = helmHideButtons[2]:GetChecked()
-	helmHideCombat = helmHideButtons[3]:GetChecked()
+function HelmHide:GetHelm(info)
+	return helmHideHelmEnabled
 end
 
-local helmHideFrame = CreateFrame("FRAME", nil, UIParent)
-helmHideFrame:RegisterEvent("PLAYER_ENTERING_WORLD");
-helmHideFrame:RegisterEvent("PLAYER_UPDATE_RESTING");
-helmHideFrame:RegisterEvent("ZONE_CHANGED");
-helmHideFrame:RegisterEvent("ZONE_CHANGED_INDOORS");
-helmHideFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA");
-helmHideFrame:RegisterEvent("PLAYER_LOGIN");
-helmHideFrame:RegisterEvent("PLAYER_REGEN_DISABLED");
-helmHideFrame:RegisterEvent("PLAYER_REGEN_ENABLED");
-helmHideFrame:SetScript("OnEvent", helmHideFrameOnEvent)
+function HelmHide:SetClolak(info, val)
+	helmHideCloakEnabled = val
+end
 
-helmHideHelmButton = HelmHideCreateButton("Interface\\AddOns\\HelmHide\\HelmShow", SHOW_HELM, HelmHideHelmToggle, "BOTTOMLEFT", 5, 35)
-
-helmHideCloakButton = HelmHideCreateButton("Interface\\AddOns\\HelmHide\\CloakShow", SHOW_CLOAK, HelmHideCloakToggle, "BOTTOMRIGHT", -5, 35)
-
-local helmHideOptions = CreateFrame("FRAME")
-helmHideOptions.name = "Helm Hide"
-helmHideCheckButton("Enable autohiding helmet", helmHideOptions, 20, -20)
-helmHideCheckButton("Enable autohiding cloak", helmHideOptions, 20, -50)
-helmHideCheckButton("Show helmet only in combat", helmHideOptions, 20, -80)
-helmHideOptions.refresh = helmHideOptionsRefresh
-helmHideOptions.okay = helmHideOptionsOkay
-helmHideOptions.cancel = helmHideOptionsRefresh
-InterfaceOptions_AddCategory(helmHideOptions)
+function HelmHide:GetClolak(info)
+	return helmHideCloakEnabled
+end
